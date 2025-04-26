@@ -9,7 +9,8 @@ export const ConnectButton = () => {
     isConnecting, 
     connectWallet, 
     disconnectWallet,
-    shortenAddress 
+    shortenAddress,
+    arBalance
   } = useWanderWallet();
 
   if (walletAddress) {
@@ -21,6 +22,7 @@ export const ConnectButton = () => {
         >
           <Wallet size={16} className="text-spark-purple" />
           <span>{shortenAddress(walletAddress)}</span>
+          <span className="text-xs text-spark-purple">{arBalance} AR</span>
         </Button>
         <Button
           variant="ghost"

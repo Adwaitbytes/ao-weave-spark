@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from '@/components/ui/use-toast';
+import { getArweaveBalance } from '@/services/arweaveService';
 
 // Define window type with Wander
 declare global {
@@ -11,6 +12,10 @@ declare global {
       getActiveAddress: () => Promise<string | null>;
       isConnected: () => Promise<boolean>;
     };
+    turbo?: {
+      uploadFile: (data: any) => Promise<{ transactionId: string }>;
+      getBalance: () => Promise<{ balance: string }>;
+    }
   }
 }
 
@@ -18,6 +23,7 @@ export const useWanderWallet = () => {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isWalletAvailable, setIsWalletAvailable] = useState(false);
+  const [arBalance, setArBalance] = useState<string>("0");
 
   // Check if Wander wallet is available
   useEffect(() => {
@@ -38,6 +44,16 @@ export const useWanderWallet = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Load Turbo SDK
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !window.turbo) {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/@ardrive/turbo-sdk/dist/turbo.js';
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
   // Check if already connected
   useEffect(() => {
     const checkConnection = async () => {
@@ -48,6 +64,12 @@ export const useWanderWallet = () => {
         if (isConnected) {
           const address = await window.wander.getActiveAddress();
           setWalletAddress(address);
+          
+          // Get AR balance if connected
+          if (address && window.turbo) {
+            const balance = await getArweaveBalance();
+            setArBalance(balance);
+          }
         }
       } catch (error) {
         console.error("Error checking wallet connection:", error);
@@ -58,6 +80,18 @@ export const useWanderWallet = () => {
       checkConnection();
     }
   }, [isWalletAvailable]);
+
+  // Update balance when wallet connects
+  useEffect(() => {
+    const updateBalance = async () => {
+      if (walletAddress && window.turbo) {
+        const balance = await getArweaveBalance();
+        setArBalance(balance);
+      }
+    };
+
+    updateBalance();
+  }, [walletAddress]);
 
   const connectWallet = useCallback(async () => {
     if (!window.wander) {
@@ -75,6 +109,13 @@ export const useWanderWallet = () => {
       const addresses = await window.wander.connect();
       if (addresses && addresses.length > 0) {
         setWalletAddress(addresses[0]);
+        
+        // Get AR balance after connection
+        if (window.turbo) {
+          const balance = await getArweaveBalance();
+          setArBalance(balance);
+        }
+        
         toast({
           title: "Connected!",
           description: "Wallet connected successfully",
@@ -98,6 +139,7 @@ export const useWanderWallet = () => {
     try {
       await window.wander.disconnect();
       setWalletAddress(null);
+      setArBalance("0");
       toast({
         title: "Disconnected",
         description: "Wallet disconnected successfully",
@@ -121,6 +163,7 @@ export const useWanderWallet = () => {
     walletAddress,
     isConnecting,
     isWalletAvailable,
+    arBalance,
     connectWallet,
     disconnectWallet,
     shortenAddress
