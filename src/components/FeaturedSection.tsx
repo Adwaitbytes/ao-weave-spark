@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { PromptCard } from './PromptCard';
+import { Link } from 'react-router-dom';
 
 const FEATURED_PROMPTS = [
   {
@@ -69,12 +70,12 @@ export const FeaturedSection: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-2">Featured Prompts</h2>
             <p className="text-muted-foreground">Discover the most popular AI prompts on the platform</p>
           </div>
-          <a 
-            href="#"
+          <Link 
+            to="/explore"
             className="mt-4 md:mt-0 text-spark-purple hover:text-spark-teal transition-colors"
           >
             View all prompts
-          </a>
+          </Link>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

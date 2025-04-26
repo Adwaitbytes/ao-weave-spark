@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { ConnectButton } from './ConnectButton';
+import { Link } from 'react-router-dom';
 
 export const HeroSection: React.FC = () => {
   return (
@@ -29,9 +30,11 @@ export const HeroSection: React.FC = () => {
             and powered by AO smart contracts.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-            <Button className="bg-gradient-to-r from-spark-purple to-spark-blue hover:opacity-90 transition-all px-8 py-6 text-base">
-              Explore Prompts
-              <ArrowRight size={16} className="ml-2" />
+            <Button className="bg-gradient-to-r from-spark-purple to-spark-blue hover:opacity-90 transition-all px-8 py-6 text-base" asChild>
+              <Link to="/explore">
+                Explore Prompts
+                <ArrowRight size={16} className="ml-2" />
+              </Link>
             </Button>
             <ConnectButton />
           </div>

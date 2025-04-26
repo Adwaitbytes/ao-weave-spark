@@ -3,6 +3,7 @@ import React from 'react';
 import { ConnectButton } from './ConnectButton';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -16,25 +17,25 @@ export const Navbar: React.FC = () => {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center">
-          <div className="relative flex items-center">
+          <Link to="/" className="relative flex items-center">
             <div className="h-8 w-8 rounded-full bg-gradient-to-r from-spark-purple to-spark-blue flex items-center justify-center">
               <span className="text-white font-bold text-lg">S</span>
             </div>
             <span className="ml-2 font-bold text-xl text-gradient">Spark</span>
-          </div>
+          </Link>
         </div>
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          <a href="#" className="text-foreground hover:text-spark-purple transition-colors font-medium">
+          <Link to="/explore" className="text-foreground hover:text-spark-purple transition-colors font-medium">
             Explore
-          </a>
-          <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+          </Link>
+          <Link to="/create" className="text-muted-foreground hover:text-foreground transition-colors">
             Create
-          </a>
-          <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+          </Link>
+          <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">
             About
-          </a>
+          </Link>
         </nav>
         
         {/* Connect Button (Desktop) */}
@@ -58,15 +59,15 @@ export const Navbar: React.FC = () => {
         <div className="md:hidden bg-background border-b border-border">
           <div className="container mx-auto px-4 py-6 space-y-6">
             <nav className="flex flex-col space-y-4">
-              <a href="#" className="text-foreground hover:text-spark-purple transition-colors font-medium py-2">
+              <Link to="/explore" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-spark-purple transition-colors font-medium py-2">
                 Explore
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors py-2">
+              </Link>
+              <Link to="/create" onClick={() => setIsMenuOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors py-2">
                 Create
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors py-2">
+              </Link>
+              <Link to="/about" onClick={() => setIsMenuOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors py-2">
                 About
-              </a>
+              </Link>
             </nav>
             <ConnectButton />
           </div>
