@@ -11,7 +11,7 @@ class WanderWalletMock {
       setTimeout(() => {
         this.connected = true;
         this.address = this.addresses[0];
-        console.log('Wander wallet connected:', this.address);
+        console.log('MOCK: Wander wallet connected:', this.address);
         resolve(this.addresses);
       }, 1000);
     });
@@ -22,7 +22,7 @@ class WanderWalletMock {
       setTimeout(() => {
         this.connected = false;
         this.address = null;
-        console.log('Wander wallet disconnected');
+        console.log('MOCK: Wander wallet disconnected');
         resolve();
       }, 500);
     });
@@ -37,6 +37,25 @@ class WanderWalletMock {
   }
 }
 
+// Mock Turbo SDK if not available
+const initMockTurbo = () => {
+  if (typeof window !== 'undefined' && !window.turbo) {
+    console.log('Initializing mock Turbo SDK');
+    window.turbo = {
+      uploadFile: async (data: any) => {
+        console.log('MOCK: Uploading to Arweave:', data);
+        return { 
+          transactionId: 'mock-' + Math.random().toString(36).substring(2, 15) 
+        };
+      },
+      getBalance: async () => {
+        console.log('MOCK: Getting balance');
+        return { balance: '0.1234' };
+      }
+    };
+  }
+};
+
 // Initialize mock wallet
 const initMockWallet = () => {
   if (typeof window !== 'undefined' && !window.wander) {
@@ -45,11 +64,18 @@ const initMockWallet = () => {
   }
 };
 
+// Initialize all mocks when the script loads
+const initAllMocks = () => {
+  console.log('Setting up development mocks...');
+  initMockWallet();
+  initMockTurbo();
+};
+
 // Initialize when the script loads
-initMockWallet();
+initAllMocks();
 
 // Export for use in other files
-export { initMockWallet };
+export { initMockWallet, initMockTurbo };
 
 // Also add a global window type definition
 declare global {
@@ -60,6 +86,10 @@ declare global {
       getActiveAddress: () => Promise<string | null>;
       isConnected: () => Promise<boolean>;
     };
+    turbo?: {
+      uploadFile: (data: any) => Promise<{ transactionId: string }>;
+      getBalance: () => Promise<{ balance: string }>;
+    }
   }
 }
 

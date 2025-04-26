@@ -2,6 +2,7 @@
 import { useWanderWallet } from '@/hooks/useWanderWallet';
 import { Button } from '@/components/ui/button';
 import { Loader2, Wallet, LogOut } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export const ConnectButton = () => {
   const { 
@@ -12,6 +13,19 @@ export const ConnectButton = () => {
     shortenAddress,
     arBalance
   } = useWanderWallet();
+  
+  const [displayBalance, setDisplayBalance] = useState<string>("0");
+  
+  // Format the balance when it changes
+  useEffect(() => {
+    if (arBalance) {
+      // Convert to number and format to 4 decimal places
+      const balanceNum = parseFloat(arBalance);
+      setDisplayBalance(balanceNum.toFixed(4));
+    } else {
+      setDisplayBalance("0");
+    }
+  }, [arBalance]);
 
   if (walletAddress) {
     return (
@@ -22,7 +36,7 @@ export const ConnectButton = () => {
         >
           <Wallet size={16} className="text-spark-purple" />
           <span>{shortenAddress(walletAddress)}</span>
-          <span className="text-xs text-spark-purple">{arBalance} AR</span>
+          <span className="text-xs text-spark-purple">{displayBalance} AR</span>
         </Button>
         <Button
           variant="ghost"

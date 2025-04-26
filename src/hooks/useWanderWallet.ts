@@ -33,6 +33,8 @@ export const useWanderWallet = () => {
       
       if (!isAvailable) {
         console.log('Wander wallet extension not found');
+      } else {
+        console.log('Wander wallet extension found');
       }
     };
     
@@ -44,31 +46,32 @@ export const useWanderWallet = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Load Turbo SDK
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !window.turbo) {
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/@ardrive/turbo-sdk/dist/turbo.js';
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
-
-  // Check if already connected
+  // Check if already connected on mount
   useEffect(() => {
     const checkConnection = async () => {
       if (!window.wander) return;
       
       try {
         const isConnected = await window.wander.isConnected();
+        console.log('Wallet connection status:', isConnected);
+        
         if (isConnected) {
           const address = await window.wander.getActiveAddress();
-          setWalletAddress(address);
+          console.log('Active wallet address:', address);
           
-          // Get AR balance if connected
-          if (address && window.turbo) {
-            const balance = await getArweaveBalance();
-            setArBalance(balance);
+          if (address) {
+            setWalletAddress(address);
+            
+            // Get AR balance if connected
+            if (window.turbo) {
+              try {
+                const balance = await getArweaveBalance();
+                console.log('AR balance:', balance);
+                setArBalance(balance);
+              } catch (err) {
+                console.error('Failed to get balance:', err);
+              }
+            }
           }
         }
       } catch (error) {
@@ -85,8 +88,13 @@ export const useWanderWallet = () => {
   useEffect(() => {
     const updateBalance = async () => {
       if (walletAddress && window.turbo) {
-        const balance = await getArweaveBalance();
-        setArBalance(balance);
+        try {
+          const balance = await getArweaveBalance();
+          console.log('Updated AR balance:', balance);
+          setArBalance(balance);
+        } catch (err) {
+          console.error('Failed to get balance:', err);
+        }
       }
     };
 
@@ -106,19 +114,35 @@ export const useWanderWallet = () => {
     setIsConnecting(true);
     
     try {
+      console.log('Connecting to wallet...');
       const addresses = await window.wander.connect();
+      console.log('Connection result:', addresses);
+      
       if (addresses && addresses.length > 0) {
-        setWalletAddress(addresses[0]);
+        const address = addresses[0];
+        setWalletAddress(address);
+        console.log('Wallet connected:', address);
         
         // Get AR balance after connection
         if (window.turbo) {
-          const balance = await getArweaveBalance();
-          setArBalance(balance);
+          try {
+            const balance = await getArweaveBalance();
+            console.log('Initial AR balance:', balance);
+            setArBalance(balance);
+          } catch (err) {
+            console.error('Failed to get balance:', err);
+          }
         }
         
         toast({
           title: "Connected!",
           description: "Wallet connected successfully",
+        });
+      } else {
+        toast({
+          title: "Connection failed",
+          description: "No wallet addresses returned",
+          variant: "destructive"
         });
       }
     } catch (error) {
@@ -137,9 +161,12 @@ export const useWanderWallet = () => {
     if (!window.wander || !walletAddress) return;
     
     try {
+      console.log('Disconnecting wallet...');
       await window.wander.disconnect();
       setWalletAddress(null);
       setArBalance("0");
+      console.log('Wallet disconnected');
+      
       toast({
         title: "Disconnected",
         description: "Wallet disconnected successfully",
