@@ -2,7 +2,7 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import './wanderWalletMock.ts'  // Import the mock wallet for development only
+import { toast } from '@/components/ui/use-toast';
 
 // Load Turbo SDK
 const loadTurboSDK = () => {
@@ -12,9 +12,18 @@ const loadTurboSDK = () => {
   script.async = true;
   script.onload = () => {
     console.log("Turbo SDK loaded successfully");
+    toast({
+      title: "Ready",
+      description: "Arweave integration initialized"
+    });
   };
   script.onerror = () => {
     console.error("Failed to load Turbo SDK");
+    toast({
+      title: "Error",
+      description: "Failed to load Arweave integration",
+      variant: "destructive"
+    });
   };
   document.head.appendChild(script);
 };

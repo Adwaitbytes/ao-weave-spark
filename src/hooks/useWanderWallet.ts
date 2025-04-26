@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { getArweaveBalance } from '@/services/arweaveService';
@@ -27,23 +26,21 @@ export const useWanderWallet = () => {
 
   // Check if Wander wallet is available
   useEffect(() => {
-    const checkWalletAvailability = () => {
+    const checkWalletAvailability = async () => {
       const isAvailable = !!window.wander;
       setIsWalletAvailable(isAvailable);
       
       if (!isAvailable) {
         console.log('Wander wallet extension not found');
-      } else {
-        console.log('Wander wallet extension found');
+        toast({
+          title: "Wallet Not Found",
+          description: "Please install the Wander wallet extension",
+          variant: "destructive"
+        });
       }
     };
     
     checkWalletAvailability();
-    
-    // Check again if window.wander becomes available (extension loads later)
-    const interval = setInterval(checkWalletAvailability, 1000);
-    
-    return () => clearInterval(interval);
   }, []);
 
   // Check if already connected on mount
@@ -53,25 +50,12 @@ export const useWanderWallet = () => {
       
       try {
         const isConnected = await window.wander.isConnected();
-        console.log('Wallet connection status:', isConnected);
-        
         if (isConnected) {
           const address = await window.wander.getActiveAddress();
-          console.log('Active wallet address:', address);
-          
           if (address) {
             setWalletAddress(address);
-            
-            // Get AR balance if connected
-            if (window.turbo) {
-              try {
-                const balance = await getArweaveBalance();
-                console.log('AR balance:', balance);
-                setArBalance(balance);
-              } catch (err) {
-                console.error('Failed to get balance:', err);
-              }
-            }
+            const balance = await getArweaveBalance();
+            setArBalance(balance);
           }
         }
       } catch (error) {
@@ -84,28 +68,11 @@ export const useWanderWallet = () => {
     }
   }, [isWalletAvailable]);
 
-  // Update balance when wallet connects
-  useEffect(() => {
-    const updateBalance = async () => {
-      if (walletAddress && window.turbo) {
-        try {
-          const balance = await getArweaveBalance();
-          console.log('Updated AR balance:', balance);
-          setArBalance(balance);
-        } catch (err) {
-          console.error('Failed to get balance:', err);
-        }
-      }
-    };
-
-    updateBalance();
-  }, [walletAddress]);
-
   const connectWallet = useCallback(async () => {
     if (!window.wander) {
       toast({
         title: "Wallet not found",
-        description: "Please install Wander wallet extension",
+        description: "Please install Wander wallet extension and refresh the page",
         variant: "destructive"
       });
       return;
@@ -114,42 +81,29 @@ export const useWanderWallet = () => {
     setIsConnecting(true);
     
     try {
-      console.log('Connecting to wallet...');
+      console.log('Requesting wallet connection...');
       const addresses = await window.wander.connect();
-      console.log('Connection result:', addresses);
       
       if (addresses && addresses.length > 0) {
         const address = addresses[0];
         setWalletAddress(address);
-        console.log('Wallet connected:', address);
         
-        // Get AR balance after connection
+        // Get initial AR balance
         if (window.turbo) {
-          try {
-            const balance = await getArweaveBalance();
-            console.log('Initial AR balance:', balance);
-            setArBalance(balance);
-          } catch (err) {
-            console.error('Failed to get balance:', err);
-          }
+          const balance = await getArweaveBalance();
+          setArBalance(balance);
         }
         
         toast({
           title: "Connected!",
           description: "Wallet connected successfully",
         });
-      } else {
-        toast({
-          title: "Connection failed",
-          description: "No wallet addresses returned",
-          variant: "destructive"
-        });
       }
     } catch (error) {
       console.error("Error connecting wallet:", error);
       toast({
         title: "Connection failed",
-        description: "Failed to connect to your wallet",
+        description: "Please accept the connection request in your Wander wallet",
         variant: "destructive"
       });
     } finally {
